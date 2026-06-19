@@ -62,11 +62,11 @@ public class AdditionalTests extends TestBase {
         String newWindow = newWindows.iterator().next();
         driver.switchTo().window(newWindow);
 
-        // Проверяем URL - может быть yandex.ru или dzen.ru
+        // Проверяем URL: может быть yandex.ru или dzen.ru
         String yandexUrl = driver.getCurrentUrl();
         System.out.println("URL нового окна: " + yandexUrl);
 
-        // Проверяем что URL содержит yandex или dzen (Яндекс)
+        // Проверяем что URL содержит yandex или dzen
         Assertions.assertTrue(yandexUrl.contains("yandex") || yandexUrl.contains("dzen") || yandexUrl.contains("ya.ru"),
                 "Должна открыться страница Яндекса или Дзена. URL: " + yandexUrl);
 

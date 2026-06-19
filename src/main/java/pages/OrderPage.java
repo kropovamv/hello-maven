@@ -76,7 +76,7 @@ public class OrderPage {
         stationInput.click();
         stationInput.clear();
 
-        // Небольшая пауза перед вводом
+        // Пауза перед вводом
         try {
             Thread.sleep(300);
         } catch (InterruptedException e) {
@@ -116,7 +116,7 @@ public class OrderPage {
 
             if (!found) {
                 System.out.println("Станция '" + stationName + "' не найдена в списке");
-                // Пробуем найти по частичному совпадению
+                // Ищем по частичному совпадению
                 for (WebElement option : options) {
                     String optionText = option.getText().trim();
                     if (optionText.contains(stationName) || stationName.contains(optionText)) {

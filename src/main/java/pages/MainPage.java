@@ -82,7 +82,7 @@ public class MainPage {
         return this;
     }
 
-    // ====== ИСПРАВЛЕННЫЙ МЕТОД scrollToFAQ ======
+    // ====== Метод прокручивания до FAQ ======
     public MainPage scrollToFAQ() {
         System.out.println("Прокручиваем страницу в самый низ...");
 
