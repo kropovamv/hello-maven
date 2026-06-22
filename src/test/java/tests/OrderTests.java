@@ -1,6 +1,7 @@
 package tests;
 
 import config.TestBase;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -26,10 +27,6 @@ public class OrderTests extends TestBase {
             String scooterColor,
             String comment
     ) {
-        System.out.println("========================================");
-        System.out.println("Заказ через верхнюю кнопку");
-        System.out.println("Данные: " + name + " " + surname + ", станция: " + metroStation);
-
         MainPage mainPage = new MainPage(driver);
         mainPage.clickTopOrderButton();
 
@@ -39,8 +36,8 @@ public class OrderTests extends TestBase {
                 deliveryDate, rentalPeriod, scooterColor, comment
         );
 
-        String successMsg = orderPage.getSuccessMessage();
-        System.out.println("Сообщение об успешном заказе: " + successMsg);
+        boolean isSuccess = orderPage.isSuccessMessageDisplayed();
+        Assertions.assertTrue(isSuccess, "Сообщение об успешном заказе не отобразилось");
     }
 
     @ParameterizedTest
@@ -60,10 +57,6 @@ public class OrderTests extends TestBase {
             String scooterColor,
             String comment
     ) {
-        System.out.println("========================================");
-        System.out.println("Заказ через нижнюю кнопку");
-        System.out.println("Данные: " + name + " " + surname + ", станция: " + metroStation);
-
         MainPage mainPage = new MainPage(driver);
         mainPage.clickBottomOrderButton();
 
@@ -73,7 +66,7 @@ public class OrderTests extends TestBase {
                 deliveryDate, rentalPeriod, scooterColor, comment
         );
 
-        String successMsg = orderPage.getSuccessMessage();
-        System.out.println("Сообщение об успешном заказе: " + successMsg);
+        boolean isSuccess = orderPage.isSuccessMessageDisplayed();
+        Assertions.assertTrue(isSuccess, "Сообщение об успешном заказе не отобразилось");
     }
 }
