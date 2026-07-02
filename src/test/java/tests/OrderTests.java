@@ -36,8 +36,15 @@ public class OrderTests extends TestBase {
                 deliveryDate, rentalPeriod, scooterColor, comment
         );
 
-        boolean isSuccess = orderPage.isSuccessMessageDisplayed();
-        Assertions.assertTrue(isSuccess, "Сообщение об успешном заказе не отобразилось");
+        // ✅ Проверяем, что заказ действительно оформлен
+        boolean isSuccess = orderPage.isOrderSuccessfullyCreated();
+        Assertions.assertTrue(isSuccess, "Заказ не был оформлен успешно");
+
+        // ✅ Дополнительно проверяем, что номер заказа получен
+        String orderNumber = orderPage.getOrderNumber();
+        Assertions.assertNotNull(orderNumber, "Номер заказа не получен");
+        Assertions.assertFalse(orderNumber.isEmpty(), "Номер заказа пустой");
+        System.out.println("Заказ успешно оформлен! Номер: " + orderNumber);
     }
 
     @ParameterizedTest
@@ -66,7 +73,14 @@ public class OrderTests extends TestBase {
                 deliveryDate, rentalPeriod, scooterColor, comment
         );
 
-        boolean isSuccess = orderPage.isSuccessMessageDisplayed();
-        Assertions.assertTrue(isSuccess, "Сообщение об успешном заказе не отобразилось");
+        // ✅ Проверяем, что заказ действительно оформлен
+        boolean isSuccess = orderPage.isOrderSuccessfullyCreated();
+        Assertions.assertTrue(isSuccess, "Заказ не был оформлен успешно");
+
+        // ✅ Дополнительно проверяем, что номер заказа получен
+        String orderNumber = orderPage.getOrderNumber();
+        Assertions.assertNotNull(orderNumber, "Номер заказа не получен");
+        Assertions.assertFalse(orderNumber.isEmpty(), "Номер заказа пустой");
+        System.out.println("Заказ успешно оформлен! Номер: " + orderNumber);
     }
 }

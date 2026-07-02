@@ -16,6 +16,7 @@ public class OrderPage {
     private final WebDriver driver;
     private final WebDriverWait wait;
 
+    // Локаторы для первой формы
     private final By nameInput = By.xpath("//input[@placeholder='* Имя']");
     private final By surnameInput = By.xpath("//input[@placeholder='* Фамилия']");
     private final By addressInput = By.xpath("//input[@placeholder='* Адрес: куда привезти заказ']");
@@ -23,12 +24,16 @@ public class OrderPage {
     private final By phoneInput = By.xpath("//input[@placeholder='* Телефон: на него позвонит курьер']");
     private final By nextButton = By.xpath("//button[text()='Далее']");
 
+    // Локаторы для второй формы
     private final By deliveryDateInput = By.xpath("//input[@placeholder='* Когда привезти самокат']");
     private final By rentalPeriodDropdown = By.xpath("//div[contains(@class, 'Dropdown-control')]");
     private final By commentInput = By.xpath("//input[@placeholder='Комментарий для курьера']");
     private final By orderButton = By.xpath("//div[contains(@class, 'Order_Buttons')]/button[text()='Заказать']");
+
+    // Локаторы для модальных окон
     private final By confirmButton = By.xpath("//button[text()='Да']");
-    private final By successMessage = By.xpath("//div[contains(@class, 'Order_ModalHeader')]");
+    private final By successModalHeader = By.xpath("//div[contains(@class, 'Order_ModalHeader')]");
+    private final By successModalText = By.xpath("//div[contains(@class, 'Order_Modal')]//div[contains(@class, 'Order_Text')]");
 
     public OrderPage(WebDriver driver) {
         this.driver = driver;
@@ -42,6 +47,8 @@ public class OrderPage {
     private WebElement waitForClickableElement(By locator) {
         return wait.until(ExpectedConditions.elementToBeClickable(locator));
     }
+
+    // === Методы для первой формы ===
 
     public void setName(String name) {
         WebElement element = waitForElement(nameInput);
@@ -103,6 +110,17 @@ public class OrderPage {
         wait.until(ExpectedConditions.elementToBeClickable(button)).click();
     }
 
+    public void fillCustomerForm(String name, String surname, String address, String metroStation, String phone) {
+        setName(name);
+        setSurname(surname);
+        setAddress(address);
+        selectMetroStation(metroStation);
+        setPhone(phone);
+        clickNextButton();
+    }
+
+    // === Методы для второй формы ===
+
     public void setDeliveryDate(String date) {
         WebElement element = waitForClickableElement(deliveryDateInput);
         element.clear();
@@ -152,17 +170,51 @@ public class OrderPage {
         confirm.click();
     }
 
-    public String getSuccessMessage() {
-        WebElement message = waitForElement(successMessage);
-        return message.getText();
+    // === Методы для работы с модальными окнами ===
+
+    public boolean isOrderSuccessfullyCreated() {
+        try {
+            // Ждём появления заголовка "Заказ оформлен"
+            WebElement header = wait.until(ExpectedConditions.visibilityOfElementLocated(successModalHeader));
+            String headerText = header.getText();
+            System.out.println("Заголовок модального окна: " + headerText);
+
+            if (!headerText.contains("Заказ оформлен")) {
+                return false;
+            }
+
+            // Ждём появления текста с номером заказа
+            WebElement textElement = wait.until(ExpectedConditions.visibilityOfElementLocated(successModalText));
+            String text = textElement.getText();
+            System.out.println("Текст модального окна: " + text);
+
+            return text.contains("Номер заказа") || text.contains("заказа");
+        } catch (Exception e) {
+            System.out.println("Ошибка при проверке успешного заказа: " + e.getMessage());
+            return false;
+        }
     }
 
-    public boolean isSuccessMessageDisplayed() {
+    public String getOrderNumber() {
         try {
-            WebElement message = waitForElement(successMessage);
-            return message.isDisplayed();
+            WebElement textElement = wait.until(ExpectedConditions.visibilityOfElementLocated(successModalText));
+            String text = textElement.getText();
+            System.out.println("Текст для извлечения номера: " + text);
+
+            // Извлекаем номер заказа из текста
+            if (text.contains("Номер заказа:")) {
+                String[] parts = text.split("Номер заказа:");
+                if (parts.length > 1) {
+                    String numberPart = parts[1].trim();
+                    String[] numberParts = numberPart.split(" ");
+                    if (numberParts.length > 0) {
+                        return numberParts[0];
+                    }
+                }
+            }
+            return "Номер не найден";
         } catch (Exception e) {
-            return false;
+            return "Ошибка получения номера";
         }
     }
 
@@ -170,12 +222,7 @@ public class OrderPage {
             String name, String surname, String address, String metroStation, String phone,
             String deliveryDate, String rentalPeriod, String scooterColor, String comment
     ) {
-        setName(name);
-        setSurname(surname);
-        setAddress(address);
-        selectMetroStation(metroStation);
-        setPhone(phone);
-        clickNextButton();
+        fillCustomerForm(name, surname, address, metroStation, phone);
         setDeliveryDate(deliveryDate);
         selectRentalPeriod(rentalPeriod);
         selectScooterColor(scooterColor);
