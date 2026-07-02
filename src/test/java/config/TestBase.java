@@ -44,7 +44,7 @@ public class TestBase {
             try {
                 driver.quit();
             } catch (Exception e) {
-                // Игнорируем ошибки при закрытии
+
             }
         }
     }

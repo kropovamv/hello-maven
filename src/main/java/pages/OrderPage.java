@@ -29,8 +29,11 @@ public class OrderPage {
     private final By rentalPeriodDropdown = By.xpath("//div[contains(@class, 'Dropdown-control')]");
     private final By commentInput = By.xpath("//input[@placeholder='Комментарий для курьера']");
     private final By orderButton = By.xpath("//div[contains(@class, 'Order_Buttons')]/button[text()='Заказать']");
+
+    // Локаторы для модальных окон
     private final By confirmButton = By.xpath("//button[text()='Да']");
-    private final By successMessage = By.xpath("//div[contains(@class, 'Order_ModalHeader')]");
+    private final By successModalHeader = By.xpath("//div[contains(@class, 'Order_ModalHeader')]");
+    private final By successModalText = By.xpath("//div[contains(@class, 'Order_Modal')]//div[contains(@class, 'Order_Text')]");
 
     public OrderPage(WebDriver driver) {
         this.driver = driver;
@@ -51,92 +54,46 @@ public class OrderPage {
         WebElement element = waitForElement(nameInput);
         element.clear();
         element.sendKeys(name);
-        System.out.println("Ввели имя: " + name);
     }
 
     public void setSurname(String surname) {
         WebElement element = waitForElement(surnameInput);
         element.clear();
         element.sendKeys(surname);
-        System.out.println("Ввели фамилию: " + surname);
     }
 
     public void setAddress(String address) {
         WebElement element = waitForElement(addressInput);
         element.clear();
         element.sendKeys(address);
-        System.out.println("Ввели адрес: " + address);
     }
 
     public void selectMetroStation(String stationName) {
-        // Находим поле метро
         WebElement stationInput = waitForClickableElement(metroInput);
-
-        // Кликаем и очищаем
         stationInput.click();
         stationInput.clear();
-
-        // Небольшая пауза перед вводом
-        try {
-            Thread.sleep(300);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        // Вводим название станции
         stationInput.sendKeys(stationName);
-        System.out.println("Ввели название станции: " + stationName);
 
-        // Ждем появления выпадающего списка
         try {
-            Thread.sleep(1000);
-
-            // Ищем все варианты станций в выпадающем списке
-            List<WebElement> options = driver.findElements(
-                    By.xpath("//div[contains(@class, 'select-search__select')]//button[contains(@class, 'select-search__option')]")
-            );
-
-            System.out.println("Найдено вариантов: " + options.size());
+            List<WebElement> options = wait.until(ExpectedConditions.visibilityOfAllElements(
+                    driver.findElements(By.xpath("//div[contains(@class, 'select-search__select')]//button[contains(@class, 'select-search__option')]"))
+            ));
 
             boolean found = false;
             for (WebElement option : options) {
                 String optionText = option.getText().trim();
-                System.out.println("Вариант: " + optionText);
-
-                if (optionText.equals(stationName)) {
-                    // Скроллим и кликаем
+                if (optionText.equals(stationName) || optionText.contains(stationName)) {
                     ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", option);
-                    Thread.sleep(300);
-                    option.click();
+                    wait.until(ExpectedConditions.elementToBeClickable(option)).click();
                     found = true;
-                    System.out.println("Выбрана станция: " + stationName);
                     break;
                 }
             }
 
             if (!found) {
-                System.out.println("Станция '" + stationName + "' не найдена в списке");
-                // Пробуем найти по частичному совпадению
-                for (WebElement option : options) {
-                    String optionText = option.getText().trim();
-                    if (optionText.contains(stationName) || stationName.contains(optionText)) {
-                        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", option);
-                        Thread.sleep(300);
-                        option.click();
-                        found = true;
-                        System.out.println("Выбрана станция (по частичному совпадению): " + optionText);
-                        break;
-                    }
-                }
-
-                if (!found) {
-                    // Нажимаем Enter для подтверждения ввода
-                    stationInput.sendKeys(Keys.ENTER);
-                    System.out.println("Нажали Enter для подтверждения");
-                }
+                stationInput.sendKeys(Keys.ENTER);
             }
         } catch (Exception e) {
-            System.out.println("Ошибка при выборе станции: " + e.getMessage());
             stationInput.sendKeys(Keys.ENTER);
         }
     }
@@ -145,29 +102,21 @@ public class OrderPage {
         WebElement element = waitForElement(phoneInput);
         element.clear();
         element.sendKeys(phone);
-        System.out.println("Ввели телефон: " + phone);
     }
 
     public void clickNextButton() {
         WebElement button = waitForClickableElement(nextButton);
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", button);
-        try {
-            Thread.sleep(300);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        button.click();
-        System.out.println("Нажали Далее");
+        wait.until(ExpectedConditions.elementToBeClickable(button)).click();
     }
 
     public void fillCustomerForm(String name, String surname, String address, String metroStation, String phone) {
-        System.out.println("Начинаем заполнять первую форму...");
         setName(name);
         setSurname(surname);
         setAddress(address);
         selectMetroStation(metroStation);
         setPhone(phone);
-        System.out.println("Заполнили первую форму");
+        clickNextButton();
     }
 
     // === Методы для второй формы ===
@@ -177,23 +126,16 @@ public class OrderPage {
         element.clear();
         element.sendKeys(date);
         element.sendKeys(Keys.ENTER);
-        System.out.println("Установили дату: " + date);
     }
 
     public void selectRentalPeriod(String period) {
         WebElement dropdown = waitForClickableElement(rentalPeriodDropdown);
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", dropdown);
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        dropdown.click();
+        wait.until(ExpectedConditions.elementToBeClickable(dropdown)).click();
 
         By periodLocator = By.xpath("//div[contains(@class, 'Dropdown-menu')]//div[text()='" + period + "']");
         WebElement periodOption = waitForClickableElement(periodLocator);
         periodOption.click();
-        System.out.println("Выбрали период аренды: " + period);
     }
 
     public void selectScooterColor(String color) {
@@ -206,62 +148,73 @@ public class OrderPage {
 
         WebElement checkbox = waitForClickableElement(colorCheckbox);
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", checkbox);
-        try {
-            Thread.sleep(300);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         if (!checkbox.isSelected()) {
             checkbox.click();
         }
-        System.out.println("Выбрали цвет: " + color);
     }
 
     public void enterComment(String comment) {
         WebElement element = waitForElement(commentInput);
         element.clear();
         element.sendKeys(comment);
-        System.out.println("Ввели комментарий: " + comment);
     }
 
     public void clickOrderButton() {
         WebElement button = waitForClickableElement(orderButton);
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", button);
-        try {
-            Thread.sleep(300);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        button.click();
-        System.out.println("Нажали кнопку Заказать");
+        wait.until(ExpectedConditions.elementToBeClickable(button)).click();
     }
 
     public void confirmOrder() {
         WebElement confirm = waitForClickableElement(confirmButton);
         confirm.click();
-        System.out.println("Подтвердили заказ");
     }
 
-    public void fillRentalForm(String deliveryDate, String rentalPeriod, String scooterColor, String comment) {
-        System.out.println("Начинаем заполнять вторую форму...");
-        setDeliveryDate(deliveryDate);
-        selectRentalPeriod(rentalPeriod);
-        selectScooterColor(scooterColor);
-        enterComment(comment);
-        System.out.println("Заполнили вторую форму");
-    }
+    // === Методы для работы с модальными окнами ===
 
-    public String getSuccessMessage() {
-        WebElement message = waitForElement(successMessage);
-        return message.getText();
-    }
-
-    public boolean isSuccessMessageDisplayed() {
+    public boolean isOrderSuccessfullyCreated() {
         try {
-            WebElement message = waitForElement(successMessage);
-            return message.isDisplayed();
+            // Ждём появления заголовка "Заказ оформлен"
+            WebElement header = wait.until(ExpectedConditions.visibilityOfElementLocated(successModalHeader));
+            String headerText = header.getText();
+            System.out.println("Заголовок модального окна: " + headerText);
+
+            if (!headerText.contains("Заказ оформлен")) {
+                return false;
+            }
+
+            // Ждём появления текста с номером заказа
+            WebElement textElement = wait.until(ExpectedConditions.visibilityOfElementLocated(successModalText));
+            String text = textElement.getText();
+            System.out.println("Текст модального окна: " + text);
+
+            return text.contains("Номер заказа") || text.contains("заказа");
         } catch (Exception e) {
+            System.out.println("Ошибка при проверке успешного заказа: " + e.getMessage());
             return false;
+        }
+    }
+
+    public String getOrderNumber() {
+        try {
+            WebElement textElement = wait.until(ExpectedConditions.visibilityOfElementLocated(successModalText));
+            String text = textElement.getText();
+            System.out.println("Текст для извлечения номера: " + text);
+
+            // Извлекаем номер заказа из текста
+            if (text.contains("Номер заказа:")) {
+                String[] parts = text.split("Номер заказа:");
+                if (parts.length > 1) {
+                    String numberPart = parts[1].trim();
+                    String[] numberParts = numberPart.split(" ");
+                    if (numberParts.length > 0) {
+                        return numberParts[0];
+                    }
+                }
+            }
+            return "Номер не найден";
+        } catch (Exception e) {
+            return "Ошибка получения номера";
         }
     }
 
@@ -270,8 +223,10 @@ public class OrderPage {
             String deliveryDate, String rentalPeriod, String scooterColor, String comment
     ) {
         fillCustomerForm(name, surname, address, metroStation, phone);
-        clickNextButton();
-        fillRentalForm(deliveryDate, rentalPeriod, scooterColor, comment);
+        setDeliveryDate(deliveryDate);
+        selectRentalPeriod(rentalPeriod);
+        selectScooterColor(scooterColor);
+        enterComment(comment);
         clickOrderButton();
         confirmOrder();
     }

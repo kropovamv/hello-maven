@@ -13,7 +13,7 @@ public class OrderStatusPage {
     private WebDriver driver;
     private WebDriverWait wait;
 
-    // Поле ввода номера заказа - исправленный локатор
+    // Поле ввода номера заказа
     private By orderNumberInput = By.xpath("//input[contains(@class, 'Track_Input')]");
 
     // Кнопка "Посмотреть"
@@ -61,7 +61,7 @@ public class OrderStatusPage {
     }
 
     public String getOrderNotFoundText() {
-        // Сообщение может быть в другом месте
+
         try {
             By notFoundText = By.xpath("//div[contains(@class, 'Track_NotFound')]");
             WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(notFoundText));
